@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import toast, { Toaster } from 'react-hot-toast';
-// import type { Note } from '../../types.ts/note';
 import type { fetchNotesResponse } from '../../services/noteService';
 import { fetchNotes } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
@@ -38,11 +37,13 @@ export default function App() {
   }, [data?.notes.length]);
 
   const hendleSearch = useDebouncedCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSearch(event.target.value);
-    },
-    300
-  );
+  (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+    setPage(1);
+  },
+  300
+);
+
 
   return (
     <>
