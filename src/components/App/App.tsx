@@ -16,19 +16,26 @@ import css from './App.module.css';
 
 export default function App() {
   const [page, setPage] = useState(1);
+
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+
   const { isModalOpen, openModal, closeModal } = useModalControl();
+
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setSearch(value);
+    setPage(1); 
+  }, 300);
 
   const { data, isError, isLoading, isSuccess, isFetching } =
     useQuery<fetchNotesResponse>({
       queryKey: ['notes', page, search],
       queryFn: () => fetchNotes({ page, search }),
-      enabled: page !== 0,
       placeholderData: keepPreviousData,
     });
 
   const totalPages = data?.totalPages ?? 0;
-  // console.log(totalPages, page);
 
   useEffect(() => {
     if (data?.notes.length === 0) {
@@ -36,21 +43,23 @@ export default function App() {
     }
   }, [data?.notes.length]);
 
-  const hendleSearch = useDebouncedCallback(
-  (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    setPage(1);
-  },
-  300
-);
 
+  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchInput(value);   
+    handleSearch(value);      
+  };
 
   return (
     <>
       <Toaster />
       <div className={css.app}>
         <header className={css.toolbar}>
-          <SearchBox onChange={hendleSearch} search={search} />
+          <SearchBox
+            onChange={onInputChange}
+            search={searchInput} 
+          />
+
           {totalPages > 1 && (
             <Pagination
               totalPages={totalPages}
@@ -63,9 +72,11 @@ export default function App() {
             Create note +
           </button>
         </header>
+
         {isLoading || (isFetching && <Loader />)}
         {isError && <Error />}
         {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+
         {isModalOpen && (
           <Modal onClose={closeModal}>
             <NoteForm onSuccessClose={closeModal} />
@@ -75,5 +86,3 @@ export default function App() {
     </>
   );
 }
-
-//  App;
